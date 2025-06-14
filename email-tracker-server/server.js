@@ -57,6 +57,32 @@ app.get('/tracker', (req, res) => {
   res.send(pixel);
 });
 
+// Endpoint API JSON pour tous les envois (dashboard data)
+app.get('/api/sends', (req, res) => {
+  db.all(`
+    SELECT e.uuid, e.campaign_id, e.email, e.name, e.sent_at,
+      COUNT(o.id) as open_count,
+      GROUP_CONCAT(o.opened_at, '||') as open_dates
+    FROM emails e
+    LEFT JOIN openings o ON e.uuid = o.email_uuid
+    GROUP BY e.uuid
+    ORDER BY e.sent_at DESC
+  `, (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Erreur DB' });
+    const result = rows.map(row => ({
+      uuid: row.uuid,
+      campaign_id: row.campaign_id,
+      email: row.email,
+      name: row.name,
+      sent_at: row.sent_at,
+      open_count: row.open_count,
+      open_dates: row.open_dates ? row.open_dates.split('||') : []
+    }));
+    res.json(result);
+  });
+});
+
+// Dashboard HTML (existant)
 app.get('/dashboard', (req, res) => {
   db.all(`
     SELECT e.uuid, e.campaign_id, e.email, e.name, e.sent_at,
