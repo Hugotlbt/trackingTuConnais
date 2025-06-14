@@ -9,7 +9,6 @@ app.use(express.json());
 
 const db = new sqlite3.Database('./tracker.db');
 
-// Table des envois individuels (un mail = une ligne)
 db.run(`CREATE TABLE IF NOT EXISTS emails (
   uuid TEXT PRIMARY KEY,
   campaign_id TEXT,
@@ -17,8 +16,6 @@ db.run(`CREATE TABLE IF NOT EXISTS emails (
   name TEXT,
   sent_at TEXT
 )`);
-
-// Table des ouvertures
 db.run(`CREATE TABLE IF NOT EXISTS openings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   email_uuid TEXT,
@@ -27,7 +24,6 @@ db.run(`CREATE TABLE IF NOT EXISTS openings (
   user_agent TEXT
 )`);
 
-// Enregistrement d'un envoi (appelé par l'app desktop AVANT l'envoi du mail)
 app.post('/register', (req, res) => {
   const { uuid, campaign_id, email, name, sent_at } = req.body;
   db.run(
@@ -40,14 +36,13 @@ app.post('/register', (req, res) => {
   );
 });
 
-// Tracking pixel
 const pixel = Buffer.from(
   'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==',
   'base64'
 );
 
 app.get('/tracker', (req, res) => {
-  const { id } = req.query; // id = uuid de l'email envoyé
+  const { id } = req.query;
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const ua = req.headers['user-agent'];
   const time = new Date().toISOString();
@@ -62,39 +57,62 @@ app.get('/tracker', (req, res) => {
   res.send(pixel);
 });
 
-// Dashboard trié par date d'envoi décroissante
 app.get('/dashboard', (req, res) => {
   db.all(`
     SELECT e.uuid, e.campaign_id, e.email, e.name, e.sent_at,
       COUNT(o.id) as open_count,
-      GROUP_CONCAT(o.opened_at, ', ') as open_dates
+      GROUP_CONCAT(o.opened_at, '||') as open_dates
     FROM emails e
     LEFT JOIN openings o ON e.uuid = o.email_uuid
     GROUP BY e.uuid
     ORDER BY e.sent_at DESC
   `, (err, rows) => {
     if (err) return res.status(500).send('Erreur DB');
-    let html = `<h1>Tracking des emails</h1>
-    <table border="1" cellpadding="5">
+    let html = `<!DOCTYPE html><html lang='fr'>
+    <head>
+      <meta charset='UTF-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+      <title>Tracking des emails</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-50">
+    <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Tracking des emails</h1>
+    <div class="overflow-x-auto">
+    <table class="min-w-full border rounded-xl bg-white shadow">
+      <thead class="bg-blue-100">
       <tr>
-        <th>Destinataire</th>
-        <th>Nom</th>
-        <th>Campagne</th>
-        <th>Date d'envoi</th>
-        <th>Ouvertures</th>
-        <th>Dates d'ouverture</th>
-      </tr>`;
+        <th class="px-3 py-2">Destinataire</th>
+        <th class="px-3 py-2">Nom</th>
+        <th class="px-3 py-2">Campagne</th>
+        <th class="px-3 py-2">Date d'envoi</th>
+        <th class="px-3 py-2">Ouvertures</th>
+        <th class="px-3 py-2">Dates d'ouverture</th>
+      </tr>
+      </thead>
+      <tbody>`;
     for (const row of rows) {
-      html += `<tr>
-        <td>${row.email}</td>
-        <td>${row.name}</td>
-        <td>${row.campaign_id}</td>
-        <td>${row.sent_at}</td>
-        <td>${row.open_count}</td>
-        <td>${row.open_dates || ''}</td>
+      let openDates = '';
+      if (row.open_dates) {
+        openDates = row.open_dates
+          .split('||')
+          .map(date => {
+            if (!date) return '';
+            const d = new Date(date);
+            return `<span class='block'>${d.toLocaleString('fr-FR', { hour12: false })}</span>`;
+          })
+          .join('');
+      }
+      html += `<tr class="border-t">
+        <td class="px-3 py-2">${row.email}</td>
+        <td class="px-3 py-2">${row.name}</td>
+        <td class="px-3 py-2">${row.campaign_id}</td>
+        <td class="px-3 py-2">${new Date(row.sent_at).toLocaleString('fr-FR', { hour12: false })}</td>
+        <td class="px-3 py-2 text-center">${row.open_count}</td>
+        <td class="px-3 py-2">${openDates}</td>
       </tr>`;
     }
-    html += '</table>';
+    html += '</tbody></table></div></div></body></html>';
     res.send(html);
   });
 });
