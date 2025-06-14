@@ -10,7 +10,7 @@ if (process.env.RENDER) {
 }
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT; // Render: pas de fallback, obligatoire
 
 app.use(cors());
 app.use(express.json());
@@ -26,6 +26,7 @@ app.listen(PORT, () => {
 
 // Utilisation du dossier /data pour Render (persistance)
 const dbPath = process.env.PORT ? '/data/tracker.db' : './tracker.db';
+console.log('[TRACKER] Using DB path:', dbPath);
 const db = new sqlite3.Database(dbPath);
 
 db.run(`CREATE TABLE IF NOT EXISTS emails (
