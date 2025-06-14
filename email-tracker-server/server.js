@@ -73,21 +73,21 @@ app.get('/dashboard', (req, res) => {
       <meta charset='UTF-8'>
       <meta name='viewport' content='width=device-width, initial-scale=1.0'>
       <title>Tracking des emails</title>
-      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
     </head>
     <body class="bg-gray-50">
     <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6">Tracking des emails</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-800">📊 Dashboard de Tracking</h1>
     <div class="overflow-x-auto">
-    <table class="min-w-full border rounded-xl bg-white shadow">
-      <thead class="bg-blue-100">
+    <table class="min-w-full border rounded-xl bg-white shadow-md">
+      <thead class="bg-blue-100 text-blue-900 font-semibold">
       <tr>
-        <th class="px-3 py-2">Destinataire</th>
-        <th class="px-3 py-2">Nom</th>
-        <th class="px-3 py-2">Campagne</th>
-        <th class="px-3 py-2">Date d'envoi</th>
-        <th class="px-3 py-2">Ouvertures</th>
-        <th class="px-3 py-2">Dates d'ouverture</th>
+        <th class="px-3 py-2 text-left">Destinataire</th>
+        <th class="px-3 py-2 text-left">Nom</th>
+        <th class="px-3 py-2 text-left">Campagne</th>
+        <th class="px-3 py-2 text-left">Date d'envoi</th>
+        <th class="px-3 py-2 text-center">Ouvertures</th>
+        <th class="px-3 py-2 text-left">Dates d'ouverture</th>
       </tr>
       </thead>
       <tbody>`;
@@ -103,22 +103,16 @@ app.get('/dashboard', (req, res) => {
           })
           .join('');
       }
-      html += `<tr class="border-t">
+      html += `<tr class="border-t hover:bg-blue-50 transition-colors">
         <td class="px-3 py-2">${row.email}</td>
         <td class="px-3 py-2">${row.name}</td>
         <td class="px-3 py-2">${row.campaign_id}</td>
         <td class="px-3 py-2">${new Date(row.sent_at).toLocaleString('fr-FR', { hour12: false })}</td>
-        <td class="px-3 py-2 text-center">${row.open_count}</td>
-        <td class="px-3 py-2">${openDates}</td>
+        <td class="px-3 py-2 text-center font-bold">${row.open_count}</td>
+        <td class="px-3 py-2 text-sm text-gray-600">${openDates || "<em>Aucune</em>"}</td>
       </tr>`;
     }
     html += '</tbody></table></div></div></body></html>';
     res.send(html);
   });
-});
-
-app.get('/', (req, res) => res.send('Email tracker is running!'));
-
-app.listen(PORT, () => {
-  console.log(`Tracker server running on port ${PORT}`);
 });
