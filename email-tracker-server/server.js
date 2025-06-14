@@ -25,7 +25,8 @@ app.listen(PORT, () => {
 });
 
 // Utilisation du dossier /data pour Render (persistance)
-const db = new sqlite3.Database(process.env.RENDER ? '/data/tracker.db' : './tracker.db');
+const dbPath = process.env.PORT ? '/data/tracker.db' : './tracker.db';
+const db = new sqlite3.Database(dbPath);
 
 db.run(`CREATE TABLE IF NOT EXISTS emails (
   uuid TEXT PRIMARY KEY,
