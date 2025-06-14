@@ -2,13 +2,8 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 console.log('[TRACKER] process.env.PORT =', process.env.PORT);
-if (process.env.PORT) {
-  try {
-    fs.mkdirSync('/data', { recursive: true });
-  } catch (e) {
-    // Ignore si déjà existant ou erreur
-  }
-}
+// Free Render: on utilise le dossier courant pour SQLite
+
 const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT; // Render: pas de fallback, obligatoire
@@ -26,7 +21,7 @@ app.listen(PORT, () => {
 });
 
 // Utilisation du dossier /data pour Render (persistance)
-const dbPath = process.env.PORT ? '/data/tracker.db' : './tracker.db';
+const dbPath = 'tracker.db';
 console.log('[TRACKER] Using DB path:', dbPath);
 const db = new sqlite3.Database(dbPath);
 
