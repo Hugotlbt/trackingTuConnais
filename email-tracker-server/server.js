@@ -1,6 +1,19 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./tracker.db');
+
+// Création de la table si elle n'existe pas
+db.run(`CREATE TABLE IF NOT EXISTS openings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tracking_id TEXT,
+  email TEXT,
+  name TEXT,
+  opened_at TEXT,
+  ip TEXT,
+  user_agent TEXT
+)`);
 
 const app = express();
 const PORT = process.env.PORT || 10000; // Render utilisera la variable d'env PORT
