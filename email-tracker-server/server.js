@@ -1,7 +1,8 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
-if (process.env.RENDER) {
+console.log('[TRACKER] process.env.PORT =', process.env.PORT);
+if (process.env.PORT) {
   try {
     fs.mkdirSync('/data', { recursive: true });
   } catch (e) {
