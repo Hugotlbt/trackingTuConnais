@@ -1,5 +1,13 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
+if (process.env.RENDER) {
+  try {
+    fs.mkdirSync('/data', { recursive: true });
+  } catch (e) {
+    // Ignore si déjà existant ou erreur
+  }
+}
 const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 10000;
