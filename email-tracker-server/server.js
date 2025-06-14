@@ -160,5 +160,6 @@ app.get('/dashboard', (req, res) => {
     }
     html += '</tbody></table></div></div></body></html>';
     res.send(html);
+    console.log('[TRACKER] process.env.PORT =', process.env.PORT);
   });
 });
