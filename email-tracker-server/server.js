@@ -7,7 +7,17 @@ const PORT = process.env.PORT || 10000;
 app.use(cors());
 app.use(express.json());
 
-const db = new sqlite3.Database('./tracker.db');
+// Endpoint de test pour Render
+app.get('/', (req, res) => {
+  res.send('Email tracker API is running');
+});
+
+app.listen(PORT, () => {
+  console.log(`[TRACKER] Server running on port ${PORT}`);
+});
+
+// Utilisation du dossier /data pour Render (persistance)
+const db = new sqlite3.Database(process.env.RENDER ? '/data/tracker.db' : './tracker.db');
 
 db.run(`CREATE TABLE IF NOT EXISTS emails (
   uuid TEXT PRIMARY KEY,
